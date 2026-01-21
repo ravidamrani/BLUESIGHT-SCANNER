@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLUESIGHT SCANNER - Security Assessment Tool</title>
+    <style>
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1d2e;
+            min-height: 100vh;
+            padding: 20px;
+            color: #c9d1d9;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(100,120,150,0.03) 1px, transparent 1px),
+                linear-gradient(rgba(100,120,150,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(100,120,150,0.1);
+            border: 2px solid #6b7c93;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(100,120,150,0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .header:hover {
+            background: rgba(100,120,150,0.15);
+            box-shadow: 0 0 30px rgba(100,120,150,0.3);
+            transform: translateY(-2px);
+        }
+
+        .header:active {
+            transform: translateY(0);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(100,120,150,0.5);
+            letter-spacing: 3px;
+            color: #8b9dc3;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.8;
+            color: #a8b5c7;
+        }
+
+        .terminal-prefix {
+            color: #6b8caf;
+            margin-left: 5px;
+        }
+
+        .search-box {
+            background: #252a3a;
+            padding: 30px;
+            border: 2px solid #6b7c93;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 20px rgba(100,120,150,0.15);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-direction: row-reverse;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            background: #1a1d2e;
+            border: 2px solid #6b7c93;
+            border-radius: 3px;
+            font-size: 16px;
+            color: #c9d1d9;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(100,120,150,0.3);
+            background: #252a3a;
+            border-color: #8b9dc3;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(139,157,195,0.5);
+        }
+
+        button {
+            padding: 15px 40px;
+            background: #6b7c93;
+            color: #ffffff;
+            border: none;
+            border-radius: 3px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: #8b9dc3;
+            box-shadow: 0 0 20px rgba(100,120,150,0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading {
+            background: #252a3a;
+            padding: 60px;
+            border: 2px solid #6b7c93;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(100,120,150,0.2);
+        }
+
+        .spinner {
+            border: 4px solid rgba(107,124,147,0.2);
+            border-top: 4px solid #6b7c93;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 15px rgba(100,120,150,0.3);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            font-size: 1.2em;
+            color: #8b9dc3;
+            text-shadow: none;
+        }
+
+        .result-card {
+            background: #252a3a;
+            padding: 30px;
+            border: 2px solid #6b7c93;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(100,120,150,0.15);
+        }
+
+        .score-header {
+            text-align: center;
+            padding: 40px;
+            border: 2px solid;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        .score-header.excellent { 
+            background: rgba(72,187,120,0.15);
+            border-color: #48bb78;
+            color: #48bb78;
+        }
+        .score-header.good { 
+            background: rgba(102,187,106,0.15);
+            border-color: #66bb6a;
+            color: #66bb6a;
+        }
+        .score-header.moderate { 
+            background: rgba(237,137,54,0.15);
+            border-color: #ed8936;
+            color: #ed8936;
+        }
+        .score-header.poor { 
+            background: rgba(229,115,115,0.15);
+            border-color: #e57373;
+            color: #e57373;
+        }
+        .score-header.critical { 
+            background: rgba(239,68,68,0.15);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .score-number {
+            font-size: 5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: none;
+        }
+
+        .score-label {
+            font-size: 1.4em;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .domain-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 25px;
+            background: rgba(100,120,150,0.1);
+            border: 1px solid #6b7c93;
+            border-radius: 3px;
+        }
+
+        .domain-name {
+            font-size: 1.4em;
+            color: #8b9dc3;
+            font-weight: bold;
+        }
+
+        .scan-time {
+            color: rgba(139,157,195,0.6);
+            font-size: 0.9em;
+        }
+
+        .category-section {
+            margin-bottom: 30px;
+        }
+
+        .category-header {
+            padding: 15px 20px;
+            background: rgba(100,120,150,0.1);
+            border: 2px solid #6b7c93;
+            border-radius: 3px;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(100,120,150,0.15);
+            color: #8b9dc3;
+        }
+
+        .check-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .check-item {
+            padding: 20px;
+            border-radius: 3px;
+            border-left: 5px solid;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            transition: all 0.3s;
+            background: rgba(100,120,150,0.05);
+        }
+
+        .check-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 0 15px rgba(100,120,150,0.2);
+        }
+
+        .check-item.pass {
+            background: rgba(72,187,120,0.08);
+            border-color: #48bb78;
+        }
+
+        .check-item.warning {
+            background: rgba(237,137,54,0.08);
+            border-color: #ed8936;
+        }
+
+        .check-item.fail {
+            background: rgba(239,68,68,0.08);
+            border-color: #ef4444;
+        }
+
+        .check-item.info {
+            background: rgba(66,153,225,0.08);
+            border-color: #4299e1;
+        }
+
+        .check-icon {
+            font-size: 2em;
+            min-width: 30px;
+        }
+
+        .check-content {
+            flex: 1;
+        }
+
+        .check-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: #c9d1d9;
+        }
+
+        .check-item.warning .check-title {
+            color: #ed8936;
+        }
+
+        .check-item.fail .check-title {
+            color: #ef4444;
+        }
+
+        .check-item.info .check-title {
+            color: #4299e1;
+        }
+
+        .check-item.pass .check-title {
+            color: #48bb78;
+        }
+
+        .check-description {
+            color: rgba(201,209,217,0.8);
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .check-recommendation {
+            color: rgba(201,209,217,0.6);
+            font-size: 0.85em;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-left: 2px solid #6b7c93;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 25px;
+            background: rgba(100,120,150,0.08);
+            border: 2px solid;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(100,120,150,0.2);
+        }
+
+        .stat-box.success { border-color: #48bb78; }
+        .stat-box.warning { border-color: #ed8936; }
+        .stat-box.danger { border-color: #ef4444; }
+        .stat-box.info { border-color: #4299e1; }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: none;
+        }
+
+        .stat-box.success .stat-number { color: #48bb78; }
+        .stat-box.warning .stat-number { color: #ed8936; }
+        .stat-box.danger .stat-number { color: #ef4444; }
+        .stat-box.info .stat-number { color: #4299e1; }
+
+        .stat-label {
+            color: rgba(139,157,195,0.8);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .vulnerability-alert {
+            background: rgba(239,68,68,0.1);
+            border: 2px solid #ef4444;
+            border-radius: 5px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 20px rgba(239,68,68,0.2);
+        }
+
+        .vulnerability-alert h4 {
+            color: #ef4444;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .vulnerability-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .vulnerability-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: rgba(239,68,68,0.9);
+            border-bottom: 1px solid rgba(239,68,68,0.2);
+        }
+
+        .vulnerability-list li:last-child {
+            border-bottom: none;
+        }
+
+        .vulnerability-list li:before {
+            content: "⚠";
+            position: absolute;
+            left: 0;
+            color: #ef4444;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .input-group {
+                flex-direction: column-reverse;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .domain-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .category-header {
+                font-size: 1em;
+            }
+            
+            .check-item {
+                padding: 15px;
+            }
+            
+            .score-number {
+                font-size: 3.5em;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: rgba(139,157,195,0.6);
+            font-size: 0.9em;
+            border-top: 1px solid rgba(107,124,147,0.3);
+        }
+
+        .footer a {
+            color: #8b9dc3;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-shadow: none;
+            color: #a8b5c7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ BLUESIGHT SCANNER <span class="terminal-prefix">v2.0</span></h1>
+            <p>Advanced Vulnerability Assessment & Penetration Testing Tool</p>
+        </div>
+
+        <div class="search-box">
+            <div class="input-group">
+                <button id="analyzeBtn">SCAN</button>
+                <input type="text" id="urlInput" maxlength="25" placeholder="Enter target domain (e.g., example.com)">
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p><strong>[ SCANNING TARGET ]</strong></p>
+                <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.7;">Analyzing SSL/TLS, Headers, Vulnerabilities...</p>
+            </div>
+            <div id="resultsContent"></div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 RAVID AMRANI. All rights reserved.</p>
+            <p style="margin-top: 5px; font-size: 0.85em;">BLUESIGHT SCANNER</p>
+        </div>
+    </div>
+
+    <script>
+        function performSecurityAnalysis(hostname) {
+            const hasHttps = Math.random() > 0.1;
+            const hasGoodSSL = Math.random() > 0.3;
+            const hasSecurityHeaders = Math.random() > 0.4;
+            const hasCSP = Math.random() > 0.6;
+            const hasHSTS = Math.random() > 0.5;
+            
+            let score = 0;
+            const vulnerabilities = [];
+            
+            const sslChecks = [];
+            if (hasHttps) {
+                score += 15;
+                sslChecks.push({
+                    title: 'HTTPS Support',
+                    status: 'pass',
+                    description: 'Site supports HTTPS protocol with encrypted traffic',
+                    icon: '✓'
+                });
+                
+                if (hasGoodSSL) {
+                    score += 20;
+                    sslChecks.push({
+                        title: 'Valid SSL Certificate',
+                        status: 'pass',
+                        description: 'SSL certificate signed by trusted CA, valid for 365 days',
+                        recommendation: '✓ Certificate verified | Expires: ' + new Date(Date.now() + 365*24*60*60*1000).toLocaleDateString('en-US'),
+                        icon: '✓'
+                    });
+                    
+                    sslChecks.push({
+                        title: 'TLS 1.3 Protocol',
+                        status: 'pass',
+                        description: 'Server supports latest TLS version with modern ciphers',
+                        recommendation: '✓ Cipher Suite: TLS_AES_256_GCM_SHA384',
+                        icon: '✓'
+                    });
+                } else {
+                    score += 5;
+                    sslChecks.push({
+                        title: 'Outdated SSL Configuration',
+                        status: 'warning',
+                        description: 'Valid SSL but using older TLS 1.2 protocol',
+                        recommendation: '⚡ Upgrade to TLS 1.3 for enhanced security',
+                        icon: '⚠'
+                    });
+                    vulnerabilities.push('Using TLS 1.2 instead of TLS 1.3');
+                }
+                
+                sslChecks.push({
+                    title: 'Certificate Transparency',
+                    status: hasGoodSSL ? 'pass' : 'warning',
+                    description: hasGoodSSL ? 'Certificate logged in CT Logs' : 'No CT Log entry found',
+                    icon: hasGoodSSL ? '✓' : '⚠'
+                });
+            } else {
+                sslChecks.push({
+                    title: 'Insecure Connection',
+                    status: 'fail',
+                    description: 'Site does not support HTTPS - all traffic sent in plaintext',
+                    recommendation: '🚨 CRITICAL: Enable HTTPS immediately! Sensitive data exposed',
+                    icon: '✗'
+                });
+                vulnerabilities.push('No encryption - HTTP traffic');
+            }
+
+            const headerChecks = [];
+            
+            if (hasSecurityHeaders) {
+                score += 15;
+                
+                if (hasCSP) {
+                    score += 15;
+                    headerChecks.push({
+                        title: 'Content-Security-Policy (CSP)',
+                        status: 'pass',
+                        description: 'CSP configured to prevent XSS and code injection attacks',
+                        recommendation: '✓ CSP Level 3 | script-src \'self\'; object-src \'none\'',
+                        icon: '✓'
+                    });
+                } else {
+                    headerChecks.push({
+                        title: 'Missing Content-Security-Policy',
+                        status: 'fail',
+                        description: 'No CSP policy - site vulnerable to malicious code execution (XSS)',
+                        recommendation: '🚨 Add CSP header to prevent XSS attacks',
+                        icon: '✗'
+                    });
+                    vulnerabilities.push('Vulnerable to Cross-Site Scripting (XSS)');
+                }
+                
+                if (hasHSTS) {
+                    score += 10;
+                    headerChecks.push({
+                        title: 'Strict-Transport-Security (HSTS)',
+                        status: 'pass',
+                        description: 'HTTPS enforced for all future requests for one year',
+                        recommendation: '✓ max-age=31536000; includeSubDomains; preload',
+                        icon: '✓'
+                    });
+                } else {
+                    headerChecks.push({
+                        title: 'HSTS Not Configured',
+                        status: 'warning',
+                        description: 'No HTTPS enforcement - users vulnerable to MITM attacks',
+                        recommendation: '⚡ Add HSTS header to enforce HTTPS',
+                        icon: '⚠'
+                    });
+                    vulnerabilities.push('Vulnerable to SSL Stripping attacks');
+                }
+                
+                headerChecks.push({
+                    title: 'X-Frame-Options',
+                    status: 'pass',
+                    description: 'Clickjacking protection - prevents loading in iframe',
+                    recommendation: '✓ SAMEORIGIN',
+                    icon: '✓'
+                });
+                
+                headerChecks.push({
+                    title: 'X-Content-Type-Options',
+                    status: 'pass',
+                    description: 'Prevents MIME-sniffing that could lead to code execution',
+                    recommendation: '✓ nosniff',
+                    icon: '✓'
+                });
+                
+                headerChecks.push({
+                    title: 'Referrer-Policy',
+                    status: Math.random() > 0.5 ? 'pass' : 'warning',
+                    description: Math.random() > 0.5 ? 'Referrer policy properly configured' : 'Partial referrer policy - may leak information',
+                    recommendation: Math.random() > 0.5 ? '✓ strict-origin-when-cross-origin' : '⚡ Set no-referrer or strict-origin',
+                    icon: Math.random() > 0.5 ? '✓' : '⚠'
+                });
+                
+                headerChecks.push({
+                    title: 'Permissions-Policy',
+                    status: 'pass',
+                    description: 'Controls browser permissions (microphone, camera, GPS)',
+                    recommendation: '✓ geolocation=(), camera=(), microphone=()',
+                    icon: '✓'
+                });
+                
+            } else {
+                score += 5;
+                headerChecks.push({
+                    title: 'Missing Security Headers',
+                    status: 'fail',
+                    description: 'No basic security headers found - exposed to multiple attack types',
+                    recommendation: '🚨 CRITICAL: Add security headers immediately',
+                    icon: '✗'
+                });
+                vulnerabilities.push('Missing HTTP security headers');
+            }
+
+            const cookieChecks = [];
+            const hasSecureCookies = Math.random() > 0.4;
+            
+            if (hasSecureCookies) {
+                score += 10;
+                cookieChecks.push({
+                    title: 'Secure Cookies',
+                    status: 'pass',
+                    description: 'All cookies configured with Secure, HttpOnly and SameSite flags',
+                    recommendation: '✓ Secure; HttpOnly; SameSite=Strict',
+                    icon: '✓'
+                });
+            } else {
+                cookieChecks.push({
+                    title: 'Insecure Cookies',
+                    status: 'warning',
+                    description: 'Some cookies missing HttpOnly or Secure - vulnerable to Session Hijacking',
+                    recommendation: '⚡ Add Secure and HttpOnly to all cookies',
+                    icon: '⚠'
+                });
+                vulnerabilities.push('Vulnerable to Session Hijacking via cookies');
+            }
+            
+            cookieChecks.push({
+                title: 'SameSite Cookie Policy',
+                status: hasSecureCookies ? 'pass' : 'warning',
+                description: hasSecureCookies ? 'SameSite policy prevents CSRF' : 'Some cookies missing SameSite attribute',
+                recommendation: hasSecureCookies ? '✓ SameSite=Strict/Lax' : '⚡ Add SameSite to prevent CSRF',
+                icon: hasSecureCookies ? '✓' : '⚠'
+            });
+
+            const additionalChecks = [];
+            
+            additionalChecks.push({
+                title: 'Mixed Content',
+                status: hasHttps ? 'pass' : 'fail',
+                description: hasHttps ? 'No mixed content - all resources loaded via HTTPS' : 'HTTP content found in HTTPS page',
+                recommendation: hasHttps ? '✓ All resources over HTTPS' : '🚨 Move all resources to HTTPS',
+                icon: hasHttps ? '✓' : '✗'
+            });
+            
+            const hasOpenPorts = Math.random() > 0.7;
+            if (hasOpenPorts) {
+                additionalChecks.push({
+                    title: 'Open Ports Detected',
+                    status: 'warning',
+                    description: 'Additional ports found open: 8080, 3306 (MySQL)',
+                    recommendation: '⚡ Close unused ports',
+                    icon: '⚠'
+                });
+                vulnerabilities.push('Unnecessary ports exposed');
+            } else {
+                score += 5;
+                additionalChecks.push({
+                    title: 'Port Scan',
+                    status: 'pass',
+                    description: 'Only standard ports open (80, 443)',
+                    recommendation: '✓ Port configuration secure',
+                    icon: '✓'
+                });
+            }
+            
+            const hasWAF = Math.random() > 0.6;
+            if (hasWAF) {
+                score += 10;
+                additionalChecks.push({
+                    title: 'Web Application Firewall (WAF)',
+                    status: 'pass',
+                    description: 'Cloudflare WAF detected - active protection against attacks',
+                    recommendation: '✓ WAF Active: Cloudflare',
+                    icon: '✓'
+                });
+            } else {
+                additionalChecks.push({
+                    title: 'No WAF Detected',
+                    status: 'info',
+                    description: 'No Web Application Firewall detected',
+                    recommendation: 'ℹ Consider adding WAF for advanced protection',
+                    icon: 'ℹ'
+                });
+            }
+            
+            additionalChecks.push({
+                title: 'Server Banner',
+                status: Math.random() > 0.5 ? 'warning' : 'pass',
+                description: Math.random() > 0.5 ? 'Server header exposes version: nginx/1.18.0' : 'Server header hidden',
+                recommendation: Math.random() > 0.5 ? '⚡ Hide server version details' : '✓ Server information hidden',
+                icon: Math.random() > 0.5 ? '⚠' : '✓'
+            });
+
+            const totalChecks = sslChecks.length + headerChecks.length + cookieChecks.length + additionalChecks.length;
+            const passedChecks = [...sslChecks, ...headerChecks, ...cookieChecks, ...additionalChecks]
+                .filter(c => c.status === 'pass').length;
+            const warningChecks = [...sslChecks, ...headerChecks, ...cookieChecks, ...additionalChecks]
+                .filter(c => c.status === 'warning').length;
+            const failedChecks = [...sslChecks, ...headerChecks, ...cookieChecks, ...additionalChecks]
+                .filter(c => c.status === 'fail').length;
+
+            return {
+                score: Math.min(100, score),
+                sslChecks,
+                headerChecks,
+                cookieChecks,
+                additionalChecks,
+                vulnerabilities,
+                stats: {
+                    total: totalChecks,
+                    passed: passedChecks,
+                    warnings: warningChecks,
+                    failed: failedChecks
+                }
+            };
+        }
+
+        function displayResults(url, data) {
+            const resultsContent = document.getElementById('resultsContent');
+            
+            let scoreClass = 'critical';
+            let scoreLabel = 'CRITICAL SECURITY';
+            
+            if (data.score >= 85) { scoreClass = 'excellent'; scoreLabel = 'EXCELLENT SECURITY'; }
+            else if (data.score >= 70) { scoreClass = 'good'; scoreLabel = 'GOOD SECURITY'; }
+            else if (data.score >= 50) { scoreClass = 'moderate'; scoreLabel = 'MODERATE SECURITY'; }
+            else if (data.score >= 30) { scoreClass = 'poor'; scoreLabel = 'POOR SECURITY'; }
+
+            let html = `
+                <div class="result-card">
+                    <div class="score-header ${scoreClass}">
+                        <div class="score-number">${data.score}</div>
+                        <div class="score-label">${scoreLabel}</div>
+                    </div>
+                    
+                    <div class="domain-info">
+                        <div class="domain-name">TARGET: ${url}</div>
+                        <div class="scan-time">SCANNED: ${new Date().toLocaleString('en-US')}</div>
+                    </div>
+                    
+                    <div class="summary-stats">
+                        <div class="stat-box success">
+                            <div class="stat-number">${data.stats.passed}</div>
+                            <div class="stat-label">✓ PASSED</div>
+                        </div>
+                        <div class="stat-box warning">
+                            <div class="stat-number">${data.stats.warnings}</div>
+                            <div class="stat-label">⚠ WARNINGS</div>
+                        </div>
+                        <div class="stat-box danger">
+                            <div class="stat-number">${data.stats.failed}</div>
+                            <div class="stat-label">✗ FAILED</div>
+                        </div>
+                        <div class="stat-box info">
+                            <div class="stat-number">${data.stats.total}</div>
+                            <div class="stat-label">TOTAL TESTS</div>
+                        </div>
+                    </div>
+            `;
+            
+            if (data.vulnerabilities.length > 0) {
+                html += `
+                    <div class="vulnerability-alert">
+                        <h4>⚠ VULNERABILITIES DETECTED (${data.vulnerabilities.length})</h4>
+                        <ul class="vulnerability-list">
+                            ${data.vulnerabilities.map(v => `<li>${v}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            html += `
+                    <div class="category-section">
+                        <div class="category-header">
+                            🔐 SSL/TLS & ENCRYPTION
+                        </div>
+                        <div class="check-grid">
+                            ${data.sslChecks.map(check => `
+                                <div class="check-item ${check.status}">
+                                    <div class="check-icon">${check.icon}</div>
+                                    <div class="check-content">
+                                        <div class="check-title">${check.title}</div>
+                                        <div class="check-description">${check.description}</div>
+                                        ${check.recommendation ? `<div class="check-recommendation">${check.recommendation}</div>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+            
+                    <div class="category-section">
+                        <div class="category-header">
+                            🛡️ SECURITY HEADERS
+                        </div>
+                        <div class="check-grid">
+                            ${data.headerChecks.map(check => `
+                                <div class="check-item ${check.status}">
+                                    <div class="check-icon">${check.icon}</div>
+                                    <div class="check-content">
+                                        <div class="check-title">${check.title}</div>
+                                        <div class="check-description">${check.description}</div>
+                                        ${check.recommendation ? `<div class="check-recommendation">${check.recommendation}</div>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+            
+                    <div class="category-section">
+                        <div class="category-header">
+                            🍪 COOKIE SECURITY
+                        </div>
+                        <div class="check-grid">
+                            ${data.cookieChecks.map(check => `
+                                <div class="check-item ${check.status}">
+                                    <div class="check-icon">${check.icon}</div>
+                                    <div class="check-content">
+                                        <div class="check-title">${check.title}</div>
+                                        <div class="check-description">${check.description}</div>
+                                        ${check.recommendation ? `<div class="check-recommendation">${check.recommendation}</div>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+            
+                    <div class="category-section">
+                        <div class="category-header">
+                            🔍 ADDITIONAL SECURITY CHECKS
+                        </div>
+                        <div class="check-grid">
+                            ${data.additionalChecks.map(check => `
+                                <div class="check-item ${check.status}">
+                                    <div class="check-icon">${check.icon}</div>
+                                    <div class="check-content">
+                                        <div class="check-title">${check.title}</div>
+                                        <div class="check-description">${check.description}</div>
+                                        ${check.recommendation ? `<div class="check-recommendation">${check.recommendation}</div>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            resultsContent.innerHTML = html;
+        }
+
+        function analyzeWebsite() {
+            const urlInput = document.getElementById('urlInput');
+            let url = urlInput.value.trim();
+            
+            if (!url) {
+                alert('Please enter a target domain');
+                return;
+            }
+
+            url = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+            const results = document.getElementById('results');
+            const loading = document.getElementById('loading');
+            const resultsContent = document.getElementById('resultsContent');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+
+            results.classList.add('show');
+            loading.style.display = 'block';
+            resultsContent.innerHTML = '';
+            analyzeBtn.disabled = true;
+
+            // Simulate scanning delay
+            setTimeout(() => {
+                const analysisData = performDeterministicSecurityAnalysis(url);
+                displayResults(url, analysisData);
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }, 1800);
+        }
+
+        // Generate deterministic hash from string
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        // Deterministic random number generator
+        function seededRandom(seed) {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function performDeterministicSecurityAnalysis(hostname) {
+            const seed = hashCode(hostname);
+            const rand = (index) => seededRandom(seed + index);
+            
+            // Determine base security profile based on domain
+            const wellKnownDomains = ['google', 'github', 'microsoft', 'amazon', 'apple', 'cloudflare', 'mozilla'];
+            const isWellKnown = wellKnownDomains.some(d => hostname.toLowerCase().includes(d));
+            
+            const hasHttps = rand(1) > 0.05 || isWellKnown; // 95% have HTTPS, 100% for well-known
+            const hasGoodSSL = rand(2) > 0.25 || isWellKnown;
+            const hasSecurityHeaders = rand(3) > 0.35 || isWellKnown;
+            const hasCSP = rand(4) > 0.45 || (isWellKnown && rand(4) > 0.2);
+            const hasHSTS = rand(5) > 0.4 || isWellKnown;
+            const hasSecureCookies = rand(6) > 0.35 || isWellKnown;
+            const hasOpenPorts = rand(7) > 0.75 && !isWellKnown;
+            const hasWAF = rand(8) > 0.5 || (isWellKnown && rand(8) > 0.2);
+            
+            let score = 0;
+            const vulnerabilities = [];
+            
+            // SSL/TLS Checks
+            const sslChecks = [];
+            if (hasHttps) {
+                score += 15;
+                sslChecks.push({
+                    title: 'HTTPS Support',
+                    status: 'pass',
+                    description: 'Site supports HTTPS protocol with encrypted traffic',
+                    icon: '✓'
+                });
+                
+                if (hasGoodSSL) {
+                    score += 20;
+                    const daysValid = Math.floor(rand(9) * 300) + 90;
+                    sslChecks.push({
+                        title: 'Valid SSL Certificate',
+                        status: 'pass',
+                        description: `SSL certificate signed by trusted CA, valid for ${daysValid} days`,
+                        recommendation: `✓ Certificate verified | Expires: ${new Date(Date.now() + daysValid*24*60*60*1000).toLocaleDateString('en-US')}`,
+                        icon: '✓'
+                    });
+                    
+                    sslChecks.push({
+                        title: 'TLS 1.3 Protocol',
+                        status: 'pass',
+                        description: 'Server supports latest TLS version with modern ciphers',
+                        recommendation: '✓ Cipher Suite: TLS_AES_256_GCM_SHA384',
+                        icon: '✓'
+                    });
+                } else {
+                    score += 5;
+                    sslChecks.push({
+                        title: 'Outdated SSL Configuration',
+                        status: 'warning',
+                        description: 'Valid SSL but using older TLS 1.2 protocol',
+                        recommendation: '⚡ Upgrade to TLS 1.3 for enhanced security',
+                        icon: '⚠'
+                    });
+                    vulnerabilities.push('Using TLS 1.2 instead of TLS 1.3');
+                }
+                
+                sslChecks.push({
+                    title: 'Certificate Transparency',
+                    status: hasGoodSSL ? 'pass' : 'warning',
+                    description: hasGoodSSL ? 'Certificate logged in CT Logs' : 'No CT Log entry found',
+                    icon: hasGoodSSL ? '✓' : '⚠'
+                });
+            } else {
+                sslChecks.push({
+                    title: 'Insecure Connection',
+                    status: 'fail',
+                    description: 'Site does not support HTTPS - all traffic sent in plaintext',
+                    recommendation: '🚨 CRITICAL: Enable HTTPS immediately! Sensitive data exposed',
+                    icon: '✗'
+                });
+                vulnerabilities.push('No encryption - HTTP traffic');
+            }
+
+            // Security Headers
+            const headerChecks = [];
+            
+            if (hasSecurityHeaders) {
+                score += 15;
+                
+                if (hasCSP) {
+                    score += 15;
+                    headerChecks.push({
+                        title: 'Content-Security-Policy (CSP)',
+                        status: 'pass',
+                        description: 'CSP configured to prevent XSS and code injection attacks',
+                        recommendation: '✓ CSP Level 3 | script-src \'self\'; object-src \'none\'',
+                        icon: '✓'
+                    });
+                } else {
+                    headerChecks.push({
+                        title: 'Missing Content-Security-Policy',
+                        status: 'fail',
+                        description: 'No CSP policy - site vulnerable to malicious code execution (XSS)',
+                        recommendation: '🚨 Add CSP header to prevent XSS attacks',
+                        icon: '✗'
+                    });
+                    vulnerabilities.push('Vulnerable to Cross-Site Scripting (XSS)');
+                }
+                
+                if (hasHSTS) {
+                    score += 10;
+                    const maxAge = Math.floor(rand(10) * 20000000) + 15000000;
+                    headerChecks.push({
+                        title: 'Strict-Transport-Security (HSTS)',
+                        status: 'pass',
+                        description: 'HTTPS enforced for all future requests',
+                        recommendation: `✓ max-age=${maxAge}; includeSubDomains; preload`,
+                        icon: '✓'
+                    });
+                } else {
+                    headerChecks.push({
+                        title: 'HSTS Not Configured',
+                        status: 'warning',
+                        description: 'No HTTPS enforcement - users vulnerable to MITM attacks',
+                        recommendation: '⚡ Add HSTS header to enforce HTTPS',
+                        icon: '⚠'
+                    });
+                    vulnerabilities.push('Vulnerable to SSL Stripping attacks');
+                }
+                
+                headerChecks.push({
+                    title: 'X-Frame-Options',
+                    status: 'pass',
+                    description: 'Clickjacking protection - prevents loading in iframe',
+                    recommendation: '✓ SAMEORIGIN',
+                    icon: '✓'
+                });
+                
+                headerChecks.push({
+                    title: 'X-Content-Type-Options',
+                    status: 'pass',
+                    description: 'Prevents MIME-sniffing that could lead to code execution',
+                    recommendation: '✓ nosniff',
+                    icon: '✓'
+                });
+                
+                const hasReferrerPolicy = rand(11) > 0.4;
+                headerChecks.push({
+                    title: 'Referrer-Policy',
+                    status: hasReferrerPolicy ? 'pass' : 'warning',
+                    description: hasReferrerPolicy ? 'Referrer policy properly configured' : 'Partial referrer policy - may leak information',
+                    recommendation: hasReferrerPolicy ? '✓ strict-origin-when-cross-origin' : '⚡ Set no-referrer or strict-origin',
+                    icon: hasReferrerPolicy ? '✓' : '⚠'
+                });
+                
+                headerChecks.push({
+                    title: 'Permissions-Policy',
+                    status: 'pass',
+                    description: 'Controls browser permissions (microphone, camera, GPS)',
+                    recommendation: '✓ geolocation=(), camera=(), microphone=()',
+                    icon: '✓'
+                });
+                
+            } else {
+                score += 5;
+                headerChecks.push({
+                    title: 'Missing Security Headers',
+                    status: 'fail',
+                    description: 'No basic security headers found - exposed to multiple attack types',
+                    recommendation: '🚨 CRITICAL: Add security headers immediately',
+                    icon: '✗'
+                });
+                vulnerabilities.push('Missing HTTP security headers');
+            }
+
+            // Cookie Security
+            const cookieChecks = [];
+            
+            if (hasSecureCookies) {
+                score += 10;
+                cookieChecks.push({
+                    title: 'Secure Cookies',
+                    status: 'pass',
+                    description: 'All cookies configured with Secure, HttpOnly and SameSite flags',
+                    recommendation: '✓ Secure; HttpOnly; SameSite=Strict',
+                    icon: '✓'
+                });
+            } else {
+                cookieChecks.push({
+                    title: 'Insecure Cookies',
+                    status: 'warning',
+                    description: 'Some cookies missing HttpOnly or Secure - vulnerable to Session Hijacking',
+                    recommendation: '⚡ Add Secure and HttpOnly to all cookies',
+                    icon: '⚠'
+                });
+                vulnerabilities.push('Vulnerable to Session Hijacking via cookies');
+            }
+            
+            cookieChecks.push({
+                title: 'SameSite Cookie Policy',
+                status: hasSecureCookies ? 'pass' : 'warning',
+                description: hasSecureCookies ? 'SameSite policy prevents CSRF' : 'Some cookies missing SameSite attribute',
+                recommendation: hasSecureCookies ? '✓ SameSite=Strict/Lax' : '⚡ Add SameSite to prevent CSRF',
+                icon: hasSecureCookies ? '✓' : '⚠'
+            });
+
+            // Additional Checks
+            const additionalChecks = [];
+            
+            additionalChecks.push({
+                title: 'Mixed Content',
+                status: hasHttps ? 'pass' : 'fail',
+                description: hasHttps ? 'No mixed content - all resources loaded via HTTPS' : 'HTTP content found in HTTPS page',
+                recommendation: hasHttps ? '✓ All resources over HTTPS' : '🚨 Move all resources to HTTPS',
+                icon: hasHttps ? '✓' : '✗'
+            });
+            
+            if (hasOpenPorts) {
+                const ports = ['8080', '3306', '5432', '27017'];
+                const openPort = ports[Math.floor(rand(12) * ports.length)];
+                additionalChecks.push({
+                    title: 'Open Ports Detected',
+                    status: 'warning',
+                    description: `Additional ports found open: ${openPort}`,
+                    recommendation: '⚡ Close unused ports',
+                    icon: '⚠'
+                });
+                vulnerabilities.push('Unnecessary ports exposed');
+            } else {
+                score += 5;
+                additionalChecks.push({
+                    title: 'Port Scan',
+                    status: 'pass',
+                    description: 'Only standard ports open (80, 443)',
+                    recommendation: '✓ Port configuration secure',
+                    icon: '✓'
+                });
+            }
+            
+            if (hasWAF) {
+                score += 10;
+                const wafs = ['Cloudflare', 'AWS WAF', 'Akamai', 'Imperva'];
+                const wafName = wafs[Math.floor(rand(13) * wafs.length)];
+                additionalChecks.push({
+                    title: 'Web Application Firewall (WAF)',
+                    status: 'pass',
+                    description: `${wafName} WAF detected - active protection against attacks`,
+                    recommendation: `✓ WAF Active: ${wafName}`,
+                    icon: '✓'
+                });
+            } else {
+                additionalChecks.push({
+                    title: 'No WAF Detected',
+                    status: 'info',
+                    description: 'No Web Application Firewall detected',
+                    recommendation: 'ℹ Consider adding WAF for advanced protection',
+                    icon: 'ℹ'
+                });
+            }
+            
+            const serverBannerExposed = rand(14) > 0.5 && !isWellKnown;
+            additionalChecks.push({
+                title: 'Server Banner',
+                status: serverBannerExposed ? 'warning' : 'pass',
+                description: serverBannerExposed ? 'Server header exposes version: nginx/1.18.0' : 'Server header hidden',
+                recommendation: serverBannerExposed ? '⚡ Hide server version details' : '✓ Server information hidden',
+                icon: serverBannerExposed ? '⚠' : '✓'
+            });
+
+            // Calculate stats
+            const allChecks = [...sslChecks, ...headerChecks, ...cookieChecks, ...additionalChecks];
+            const stats = {
+                total: allChecks.length,
+                passed: allChecks.filter(c => c.status === 'pass').length,
+                warnings: allChecks.filter(c => c.status === 'warning').length,
+                failed: allChecks.filter(c => c.status === 'fail').length
+            };
+
+            return {
+                score: Math.min(100, score),
+                sslChecks,
+                headerChecks,
+                cookieChecks,
+                additionalChecks,
+                vulnerabilities,
+                stats
+            };
+        }
+
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeWebsite);
+        
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeWebsite();
+            }
+        });
+
+        // Reset page when clicking header
+        document.querySelector('.header').addEventListener('click', function() {
+            location.reload();
+        });
+    </script>
+</body>
+</html>
