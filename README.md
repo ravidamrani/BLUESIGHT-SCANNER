@@ -38,3 +38,41 @@ It provides a fast, clear overview of a target’s security posture and helps id
 ```bash
 git clone https://github.com/ravidamrani/bluesight-scanner.git
 cd bluesight-scanner
+
+Or try the live demo:
+
+👉 https://claude.ai/public/artifacts/a4276cfa-e864-4bdd-af5e-080628d5e140
+
+▶️ Usage
+
+Open the application in your browser
+
+Enter a target domain (without http:// or https://)
+
+Click SCAN
+
+Review the security scan results
+
+📊 Example Output
+
+Overall Security Score
+
+Passed security checks
+
+Warnings and recommendations
+
+Failed checks with risk indication
+
+⚠️ Disclaimer
+
+This tool is intended for educational and authorized security testing purposes only.
+Do not scan systems or domains without explicit permission.
+
+📄 License
+
+© 2025 Ravid Amrani. All rights reserved.
+
+🤝 Contributing
+
+Contributions, suggestions, and improvements are welcome.
+Feel free to open issues or submit pull requests.
