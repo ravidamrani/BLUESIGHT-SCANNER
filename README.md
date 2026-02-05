@@ -43,7 +43,7 @@ Or try the live demo:
 
 👉 https://claude.ai/public/artifacts/a4276cfa-e864-4bdd-af5e-080628d5e140
 
-▶️ Usage
+## ▶️ Usage
 
 Open the application in your browser
 
