@@ -34,12 +34,11 @@ It provides a fast, clear overview of a target’s security posture and helps id
 ---
 
 ## 📦 Installation (Optional)
-
-```bash
+""bash 
 git clone https://github.com/ravidamrani/bluesight-scanner.git
-cd bluesight-scanner
+cd BLUESIGHT-SCANNER
 
-Or try the live demo:
+or try the live demo:
 
 👉 https://claude.ai/public/artifacts/a4276cfa-e864-4bdd-af5e-080628d5e140
 
@@ -63,7 +62,7 @@ Warnings and recommendations
 
 Failed checks with risk indication
 
-⚠️ Disclaimer
+⚠️ Disclaimer 
 
 This tool is intended for educational and authorized security testing purposes only.
 Do not scan systems or domains without explicit permission.
