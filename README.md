@@ -52,6 +52,7 @@ Click SCAN
 
 Review the security scan results
 
+
 📊 Example Output
 
 Overall Security Score
@@ -62,14 +63,17 @@ Warnings and recommendations
 
 Failed checks with risk indication
 
+
 ⚠️ Disclaimer 
 
 This tool is intended for educational and authorized security testing purposes only.
 Do not scan systems or domains without explicit permission.
 
+
 📄 License
 
 © 2025 Ravid Amrani. All rights reserved.
+
 
 🤝 Contributing
 
