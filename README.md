@@ -34,7 +34,7 @@ It provides a fast, clear overview of a target’s security posture and helps id
 ---
 
 ## 📦 Installation (Optional)
-""bash 
+bash 
 git clone https://github.com/ravidamrani/bluesight-scanner.git
 
 cd BLUESIGHT-SCANNER
