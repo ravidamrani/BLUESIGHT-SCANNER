@@ -2,7 +2,7 @@
 
 **BLUESIGHT SCANNER** is an advanced web security scanning tool designed for vulnerability assessment and basic penetration testing of websites and domains.
 
-The tool provides a fast and clear overview of a target’s security posture and helps identify common misconfigurations and potential security risks.
+It provides a fast, clear overview of a target’s security posture and helps identify common misconfigurations and potential security risks.
 
 ---
 
@@ -24,10 +24,10 @@ The tool provides a fast and clear overview of a target’s security posture and
 
 ---
 
-## 🛠️ Technologies (example)
+## 🛠️ Technologies
 
 - **Frontend:** HTML, CSS, JavaScript  
-- **Backend:** Python / Node.js (if applicable)  
+- **Backend:** Not required (client-side scanning logic)  
 - **Security Checks:** Custom validation scripts and industry best practices  
 - **UI Design:** Dark-mode cyber security themed interface  
 
@@ -36,7 +36,5 @@ The tool provides a fast and clear overview of a target’s security posture and
 ## 📦 Installation (Optional)
 
 ```bash
-git clone https://github.com/ravidamrani/BLUESIGHT-SCANNER.git
+git clone https://github.com/ravidamrani/bluesight-scanner.git
 cd bluesight-scanner
-or
-Try: https://claude.ai/public/artifacts/a4276cfa-e864-4bdd-af5e-080628d5e140
