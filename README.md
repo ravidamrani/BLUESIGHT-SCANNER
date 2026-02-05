@@ -38,5 +38,5 @@ The tool provides a fast and clear overview of a target’s security posture and
 ```bash
 git clone https://github.com/ravidamrani/BLUESIGHT-SCANNER.git
 cd bluesight-scanner
-
+or
 Try: https://claude.ai/public/artifacts/a4276cfa-e864-4bdd-af5e-080628d5e140
