@@ -548,7 +548,7 @@
         <div class="search-box">
             <div class="input-group">
                 <button id="analyzeBtn">SCAN</button>
-                <input type="text" id="urlInput" maxlength="25" placeholder="Enter target domain (e.g., example.com)">
+                <input type="text" id="urlInput" placeholder="Enter target domain (e.g., example.com)">
             </div>
         </div>
 
@@ -963,10 +963,85 @@
                             `).join('')}
                         </div>
                     </div>
+                    <div style="text-align: center; margin: 25px 0;">
+                        <button id="downloadBtn">⬇ DOWNLOAD REPORT</button>
+                    </div>
                 </div>
             `;
 
             resultsContent.innerHTML = html;
+
+            // Store current report data globally for download
+            window.currentReport = { url, data };
+
+            document.getElementById('downloadBtn').addEventListener('click', function() {
+                downloadReport(url, data);
+            });
+        }
+
+        function downloadReport(url, data) {
+            let report = '';
+            report += '============================================================\n';
+            report += '         BLUESIGHT SCANNER - SECURITY REPORT\n';
+            report += '============================================================\n\n';
+            report += `Target:        ${url}\n`;
+            report += `Date:          ${new Date().toLocaleString('en-US')}\n`;
+            report += `Security Score: ${data.score} / 100\n`;
+            report += `Status:        ${data.score >= 85 ? 'EXCELLENT' : data.score >= 70 ? 'GOOD' : data.score >= 50 ? 'MODERATE' : data.score >= 30 ? 'POOR' : 'CRITICAL'}\n\n`;
+            report += '------------------------------------------------------------\n';
+            report += '  SUMMARY\n';
+            report += '------------------------------------------------------------\n';
+            report += `  Passed:   ${data.stats.passed}\n`;
+            report += `  Warnings: ${data.stats.warnings}\n`;
+            report += `  Failed:   ${data.stats.failed}\n`;
+            report += `  Total:    ${data.stats.total}\n\n`;
+
+            if (data.vulnerabilities.length > 0) {
+                report += '------------------------------------------------------------\n';
+                report += '  VULNERABILITIES DETECTED\n';
+                report += '------------------------------------------------------------\n';
+                data.vulnerabilities.forEach((v, i) => {
+                    report += `  [${i + 1}] ${v}\n`;
+                });
+                report += '\n';
+            }
+
+            const sections = [
+                { title: 'SSL/TLS & ENCRYPTION', checks: data.sslChecks },
+                { title: 'SECURITY HEADERS', checks: data.headerChecks },
+                { title: 'COOKIE SECURITY', checks: data.cookieChecks },
+                { title: 'ADDITIONAL SECURITY CHECKS', checks: data.additionalChecks }
+            ];
+
+            sections.forEach(section => {
+                report += '------------------------------------------------------------\n';
+                report += `  ${section.title}\n`;
+                report += '------------------------------------------------------------\n';
+                section.checks.forEach((check, i) => {
+                    const statusLabel = check.status.toUpperCase();
+                    report += `\n  [${statusLabel}] ${check.title}\n`;
+                    report += `  Description:     ${check.description}\n`;
+                    if (check.recommendation) {
+                        report += `  Recommendation:  ${check.recommendation}\n`;
+                    }
+                });
+                report += '\n';
+            });
+
+            report += '============================================================\n';
+            report += '  © 2025 RAVID AMRANI. All rights reserved.\n';
+            report += '  BLUESIGHT SCANNER\n';
+            report += '============================================================\n';
+
+            // Create and download file
+            const blob = new Blob([report], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `bluesight_report_${url.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
         }
 
         function analyzeWebsite() {
